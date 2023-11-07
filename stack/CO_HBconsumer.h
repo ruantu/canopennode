@@ -67,10 +67,14 @@ typedef enum {
 typedef struct{
     uint8_t                 nodeId;       /**< Node Id of the monitored node */
     CO_NMT_internalState_t  NMTstate;     /**< Of the remote node (Heartbeat payload) */
+    CO_NMT_internalState_t  NMTstatePrev;
     CO_HBconsumer_state_t   HBstate;      /**< Current heartbeat state */
     uint16_t                timeoutTimer; /**< Time since last heartbeat received */
     uint16_t                time;         /**< Consumer heartbeat time from OD */
     volatile void          *CANrxNew;     /**< Indication if new Heartbeat message received from the CAN bus */
+    /** Callback for remote NMT changed event. */
+    void (*pFunctSignalNmtChanged)(uint8_t nodeId, uint8_t idx, CO_NMT_internalState_t NMTstate, void *object); /**< CO_HBconsumer_initCallbackNmtChanged() or NULL */
+    void *functSignalObjectNmtChanged;/**< Pointer to object */
     /** Callback for heartbeat state change to active event */
     void                  (*pFunctSignalHbStarted)(uint8_t nodeId, uint8_t idx, void *object); /**< From CO_HBconsumer_initTimeoutCallback() or NULL */
     void                   *functSignalObjectHbStarted;/**< Pointer to object */
@@ -150,6 +154,27 @@ CO_ReturnError_t CO_HBconsumer_initEntry(
         uint8_t                 idx,
         uint8_t                 nodeId,
         uint16_t                consumerTime);
+
+/**
+ * Initialize Heartbeat consumer NMT changed callback function.
+ *
+ * Function initializes optional callback function, which is called when NMT
+ * state from the remote node changes.
+ *
+ * @param HBcons This object.
+ * @param idx index of the node in HBcons object (only when
+ *            CO_CONFIG_HB_CONS_CALLBACK_MULTI is enabled)
+ * @param object Pointer to object, which will be passed to pFunctSignal().
+ *               Can be NULL.
+ * @param pFunctSignal Pointer to the callback function. Not called if NULL.
+ */
+void CO_HBconsumer_initCallbackNmtChanged(
+        CO_HBconsumer_t        *HBcons,
+        uint8_t                 idx,
+        void                   *object,
+        void                  (*pFunctSignal)(uint8_t nodeId, uint8_t idx,
+                                              CO_NMT_internalState_t NMTstate,
+                                              void *object));
 
 /**
  * Initialize Heartbeat consumer started callback function.

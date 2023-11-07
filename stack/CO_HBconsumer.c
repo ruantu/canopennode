@@ -65,6 +65,7 @@ static void CO_HBcons_monitoredNodeConfig(
     monitoredNode->nodeId = nodeId;
     monitoredNode->time = time;
     monitoredNode->NMTstate = CO_NMT_INITIALIZING;
+    monitoredNode->NMTstatePrev = CO_NMT_INITIALIZING;
     monitoredNode->HBstate = CO_HBconsumer_UNCONFIGURED;
 
     /* is channel used */
@@ -327,8 +328,19 @@ void CO_HBconsumer_process(
                         monitoredNode->HBstate = CO_HBconsumer_UNKNOWN;
                     }
                 }
+
                 if(monitoredNode->NMTstate != CO_NMT_OPERATIONAL) {
                     AllMonitoredOperationalCopy = 0;
+                }
+
+                /* Verify, if NMT state of monitored node changed */
+                if(monitoredNode->NMTstate != monitoredNode->NMTstatePrev) {
+                    if (monitoredNode->pFunctSignalNmtChanged != NULL) {
+                        monitoredNode->pFunctSignalNmtChanged(
+                            monitoredNode->nodeId, i, monitoredNode->NMTstate,
+                            monitoredNode->functSignalObjectNmtChanged);
+                    }
+                    monitoredNode->NMTstatePrev = monitoredNode->NMTstate;
                 }
             }
             monitoredNode++;
