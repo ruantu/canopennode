@@ -51,7 +51,8 @@ static void CO_EM_receive(void *object, const CO_CANrxMsg_t *msg){
                            errorCode,
                            msg->data[2],
                            msg->data[3],
-                           infoCode);
+                           infoCode,
+                           em->functSignalObjectRx);
     }
 }
 
@@ -158,7 +159,9 @@ CO_ReturnError_t CO_EM_init(
     em->bufFull                 = 0U;
     em->wrongErrorReport        = 0U;
     em->pFunctSignal            = NULL;
+    em->functSignalObject       = NULL;
     em->pFunctSignalRx          = NULL;
+    em->functSignalObjectRx     = NULL;
     emPr->em                    = em;
     emPr->errorRegister         = errorRegister;
     emPr->preDefErr             = preDefErr;
@@ -203,10 +206,12 @@ CO_ReturnError_t CO_EM_init(
 /******************************************************************************/
 void CO_EM_initCallback(
         CO_EM_t                *em,
-        void                  (*pFunctSignal)(void))
+        void                   *object,
+        void                  (*pFunctSignal)(void *object))
 {
     if(em != NULL){
         em->pFunctSignal = pFunctSignal;
+        em->functSignalObject = object;
     }
 }
 
@@ -214,14 +219,17 @@ void CO_EM_initCallback(
 /******************************************************************************/
 void CO_EM_initCallbackRx(
         CO_EM_t                *em,
+        void                   *object,
         void                  (*pFunctSignalRx)(const uint16_t ident,
                                                 const uint16_t errorCode,
                                                 const uint8_t errorRegister,
                                                 const uint8_t errorBit,
-                                                const uint32_t infoCode))
+                                                const uint32_t infoCode,
+                                                void *object))
 {
     if(em != NULL){
         em->pFunctSignalRx = pFunctSignalRx;
+        em->functSignalObjectRx = object;
     }
 }
 
@@ -387,7 +395,7 @@ void CO_errorReport(CO_EM_t *em, const uint8_t errorBit, const uint16_t errorCod
 
             /* Optional signal to RTOS, which can resume task, which handles CO_EM_process */
             if(em->pFunctSignal != NULL) {
-                em->pFunctSignal();
+                em->pFunctSignal(em->functSignalObject);
             }
         }
     }
@@ -446,7 +454,7 @@ void CO_errorReset(CO_EM_t *em, const uint8_t errorBit, const uint32_t infoCode)
 
             /* Optional signal to RTOS, which can resume task, which handles CO_EM_process */
             if(em->pFunctSignal != NULL) {
-                em->pFunctSignal();
+                em->pFunctSignal(em->functSignalObject);
             }
         }
     }

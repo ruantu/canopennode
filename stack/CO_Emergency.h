@@ -264,13 +264,16 @@ typedef struct{
     uint8_t             wrongErrorReport;   /**< Error in arguments to CO_errorReport() */
 
     /** From CO_EM_initCallback() or NULL */
-    void              (*pFunctSignal)(void);
+    void              (*pFunctSignal)(void *object);
+    void               *functSignalObject;  /**< Object for pFunctSignal() function */
     /** From CO_EM_initCallbackRx() or NULL */
     void              (*pFunctSignalRx)(const uint16_t ident,
                                         const uint16_t errorCode,
                                         const uint8_t errorRegister,
                                         const uint8_t errorBit,
-                                        const uint32_t infoCode);
+                                        const uint32_t infoCode,
+                                        void *object);
+    void               *functSignalObjectRx;/**< Object for pFunctSignalRx() function */
 }CO_EM_t;
 
 
@@ -398,7 +401,8 @@ CO_ReturnError_t CO_EM_init(
  */
 void CO_EM_initCallback(
         CO_EM_t               *em,
-        void                  (*pFunctSignal)(void));
+        void                  *object,
+        void                  (*pFunctSignal)(void *object));
 
 
 /**
@@ -416,11 +420,13 @@ void CO_EM_initCallback(
  */
 void CO_EM_initCallbackRx(
         CO_EM_t                *em,
+        void                   *object,
         void                  (*pFunctSignalRx)(const uint16_t ident,
                                                 const uint16_t errorCode,
                                                 const uint8_t errorRegister,
                                                 const uint8_t errorBit,
-                                                const uint32_t infoCode));
+                                                const uint32_t infoCode,
+                                                void *object));
 
 
 /**
