@@ -40,6 +40,15 @@
 extern "C" {
 #endif
 
+#if ((CO_CONFIG_CRC16) & CO_CONFIG_CRC16_EXTERNAL)
+
+/* Map CANopenNode crc16_ccitt() to Zephyr crc16_itu_t() function */
+extern uint16_t crc16_itu_t(uint16_t seed, const uint8_t *src, size_t len);
+#define crc16_ccitt_single(crc, chr) do{*crc = crc16_itu_t(*crc, &chr, sizeof(uint8_t));}while(0);
+#define crc16_ccitt(block, blockLength, crc) crc16_itu_t(crc, block, blockLength)
+
+#else
+
 /**
  * @defgroup CO_crc16_ccitt CRC 16 CCITT
  * Calculation of CRC 16 CCITT polynomial.
@@ -82,6 +91,8 @@ uint16_t crc16_ccitt(const uint8_t block[],
 
 
 /** @} */ /* CO_crc16_ccitt */
+
+#endif /* !((CO_CONFIG_CRC16) & CO_CONFIG_CRC16_EXTERNAL) */
 
 #ifdef __cplusplus
 }
