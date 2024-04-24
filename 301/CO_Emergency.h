@@ -453,6 +453,8 @@ typedef struct {
                            const uint8_t errorRegister,
                            const uint8_t errorBit,
                            const uint32_t infoCode);
+    /** From CO_EM_initCallbackRx or NULL */
+    void *functSignalObjectRx;
 #endif
 
 #if ((CO_CONFIG_EM) & CO_CONFIG_FLAG_CALLBACK_PRE) || defined CO_DOXYGEN
@@ -565,7 +567,9 @@ void CO_EM_initCallbackPre(CO_EM_t *em,
  * @param pFunctSignalRx Pointer to the callback function. Not called if NULL.
  */
 void CO_EM_initCallbackRx(CO_EM_t *em,
-                          void (*pFunctSignalRx)(const uint16_t ident,
+                          void *object,
+                          void (*pFunctSignalRx)(void *object,
+                                                 const uint16_t ident,
                                                  const uint16_t errorCode,
                                                  const uint8_t errorRegister,
                                                  const uint8_t errorBit,
